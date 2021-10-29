@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="">
+        </script>
+        <style>
+            body{
+                margin: 1% 40%;
+            }
+            header{
+                width: 20vw;
+                height: 2vw;
+                display: inline-flex;
+                justify-content: space-between;
+                background-color:mintcream;
+            }
+            #newTask{
+                padding-left: 1vw;
+                width: 16vw;
+            }
+            #newTask::placeholder{
+                font-style: italic;
+            }
+            #addTask{
+                width: 2vw;
+                background-color: blueviolet;
+                font-size: 1.5vw;
+                font-weight: bold;
+                text-align: center;
+                color:white;
+            }
+            #addTask:hover{
+                background-color: rgb(192, 99, 130);
+                color:silver;
+            }
+            .task{
+                margin-top: 1vw;
+                width: 100%;
+                height: 3vw;
+                display:flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                align-content: center;
+                border-bottom: 1px solid slategrey;
+            }
+            .taskText{
+                width: 80%;
+            }
+            .trash{
+                width: 2vw;
+                height: 2vw;
+            }
+        </style>
+    </head>
+    <body>
+        <header>   
+            <input id="newTask" type="text" placeholder="куплю-ка я мороженого...">
+            <input id="addTask" type="button" value="+" onclick="taskHandler.handelNewTask()">
+        </header>
+    </body>
+    <script src="logic.js">
+
+    </script>
+</html>
