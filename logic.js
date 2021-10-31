@@ -19,17 +19,14 @@ class CheckBox{
 
         this.element.onclick = function(event){
             let task = event.target.parentNode;
+            let neighbor = event.target.nextSibling;
             if(event.target.checked){
-                alert("Задача выполнена!");
-                event.target.nextSibling.style.textDecoration = "line-through";
-                event.target.nextSibling.style.color = "red";
-
+                neighbor.className +=" completed";
                 task.parentNode.append(task);
             }   
             else{
-                event.target.nextSibling.style.textDecoration = "none";
-                event.target.nextSibling.style.color = "black";
-
+                neighbor.className = neighbor.className.slice(0, neighbor.className.indexOf(" completed"));
+                
                 for(let child of task.parentNode.childNodes){
                     if (child.className=="task"){
                         child.before(task);
@@ -84,10 +81,15 @@ function TaskHandler(texterId, adderId){
         texter: document.getElementById(texterId),
 
         adder: document.getElementById(adderId),
+        
+        allTasks: new Array(),
+
+        activeTaskIndex: -1,
 
         handelNewTask(){
             if(this.texter.value){
                 let task = new Task();
+                this.allTasks.push(task);
                 let checkbox = new CheckBox();
                 let textBox = new TextBox(this.texter.value);
                 let trashButton = new TrashButton();
@@ -106,4 +108,49 @@ function TaskHandler(texterId, adderId){
 }
 
 const taskHandler = new TaskHandler("newTask", "addTask");
-taskHandler.handelNewTask();
+taskHandler.texter.addEventListener("keyup", 
+    (e) => {
+        if(e.keyCode === 13) taskHandler.handelNewTask();
+        if (e.keyCode === 39){
+            e.target.nextSibling.focus();
+        }
+    }
+);
+
+document.body.addEventListener("keyup",
+    (e) => {
+        let tasks = taskHandler.allTasks;
+        if(e.key === "ArrowDown" || e.key === "ArrowUp"){
+            if (tasks.length !=0){
+                e.target.blur();
+                if(taskHandler.activeTaskIndex != -1) tasks[taskHandler.activeTaskIndex].taskDiv.className = "task";
+                if(e.key === "ArrowDown"){
+                    if (taskHandler.activeTaskIndex === -1) ++taskHandler.activeTaskIndex;
+                    else{
+                        if(taskHandler.activeTaskIndex+2 <= tasks.length ) ++taskHandler.activeTaskIndex;
+                        else taskHandler.activeTaskIndex = 0;
+                    }
+                }
+                if (e.key === "ArrowUp"){
+                    if(taskHandler.activeTaskIndex === -1) taskHandler.activeTaskIndex = tasks.length-1;
+                    else{
+                        if(taskHandler.activeTaskIndex ===0) taskHandler.activeTaskIndex = tasks.length-1;
+                        else --taskHandler.activeTaskIndex;
+                    }
+                }
+                tasks[taskHandler.activeTaskIndex].taskDiv.className += " active";
+            }
+        }
+    }
+);
+
+taskHandler.texter.addEventListener("focus", 
+    (e)=>{
+        if (taskHandler.activeTaskIndex != -1){
+            if (e.target.parentNode != taskHandler.allTasks[taskHandler.activeTaskIndex]) {
+                taskHandler.allTasks[taskHandler.activeTaskIndex].taskDiv.className = "task";
+                taskHandler.activeTaskIndex = -1;
+            }
+        }
+    }
+);
