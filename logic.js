@@ -12,29 +12,41 @@ class Task{
 }
 
 class CheckBox{
-    constructor(){
+    constructor(taskHandler){
         this.element = document.createElement("input");
         this.element.type = "checkbox";
         this.element.id = CheckBox.makeId();
+        this.taskHandler = taskHandler;
 
-        this.element.onclick = function(event){
-            let task = event.target.parentNode;
-            let neighbor = event.target.nextSibling;
-            if(event.target.checked){
-                neighbor.className +=" completed";
-                task.parentNode.append(task);
-            }   
-            else{
-                neighbor.className = neighbor.className.slice(0, neighbor.className.indexOf(" completed"));
-                
-                for(let child of task.parentNode.childNodes){
-                    if (child.className=="task"){
-                        child.before(task);
-                        break;
-                    }
+        this.element.addEventListener("click",
+            (event)=>{
+                let task = event.target.parentNode;
+                let taskIndex = this.taskHandler.allTasks.findIndex(
+                    (taskFromArray) => taskFromArray.taskDiv == event.target.parentNode
+                );
+                let taskObject = this.taskHandler.allTasks[taskIndex];
+                let neighbor = event.target.nextSibling;
+                if(event.target.checked){
+                    neighbor.className +=" completed";
+                    this.taskHandler.allTasks.push(taskObject);
+                    task.parentNode.append(task);
+                }   
+                else{
+                    neighbor.className = neighbor.className.slice(0, neighbor.className.indexOf(" completed"));
+                    let uncompletedTaskIndex = this.taskHandler.allTasks.findIndex(
+                        (task) => task.taskDiv.className === "task"
+                    );
+                    if (uncompletedTaskIndex != -1){
+                        this.taskHandler.allTasks[uncompletedTaskIndex].taskDiv.before(task);
+                    } else this.taskHandler.texter.parentNode.after(task);
+                    this.taskHandler.allTasks.unshift(taskObject);
+                    taskIndex++;
                 }
+                this.taskHandler.activeTaskIndex = -1;
+                taskObject.taskDiv.className = "task";
+                this.taskHandler.allTasks.splice(taskIndex, 1);
             }
-        }
+        );
     }
     static idCounter = 0;
     static makeId(){
@@ -58,16 +70,24 @@ class TextBox{
 }
 
 class TrashButton{
-    constructor(){
+    constructor(taskHandler){
         this.element = document.createElement("input");
         this.element.type = "button";
         this.element.className = "trash"; 
         this.element.id = TrashButton.makeId();
+        this.taskHandler = taskHandler;
 
-        this.element.onclick = function(event){
-            let task = event.target.parentNode;
-            task.parentNode.removeChild(task);
-        }
+        this.element.addEventListener("click",
+            (e)=>{
+                let task = e.target.parentNode;
+                let taskIndex = this.taskHandler.allTasks.findIndex(
+                    (arrayTask) => arrayTask.taskDiv === task
+                );
+                this.taskHandler.activeTaskIndex = -1;
+                this.taskHandler.allTasks.splice(taskIndex, 1);
+                task.parentNode.removeChild(task);
+            }
+        );
     }
     static idCounter = 0;
     static makeId(){
@@ -90,9 +110,9 @@ function TaskHandler(texterId, adderId){
             if(this.texter.value){
                 let task = new Task();
                 this.allTasks.push(task);
-                let checkbox = new CheckBox();
+                let checkbox = new CheckBox(this);
                 let textBox = new TextBox(this.texter.value);
-                let trashButton = new TrashButton();
+                let trashButton = new TrashButton(this);
 
                 task.taskDiv.append(checkbox.element);
                 task.taskDiv.append(textBox.textBoxDiv);
@@ -119,7 +139,27 @@ taskHandler.texter.addEventListener("keyup",
 
 document.body.addEventListener("keyup",
     (e) => {
-        let tasks = taskHandler.allTasks;
+        let tasks = taskHandler.allTasks;   
+        if (e.key === "Enter"){
+            if (taskHandler.activeTaskIndex != -1){
+                let event = new Event("click");
+                let checkbox = tasks[taskHandler.activeTaskIndex].taskDiv.firstChild;
+                if (checkbox.checked) checkbox.checked = false;
+                else checkbox.checked = true;
+                checkbox.dispatchEvent(event);
+            }
+        }
+        if (e.key === " "){
+            if(taskHandler.activeTaskIndex != -1) tasks[taskHandler.activeTaskIndex].taskDiv.className = "task";
+            taskHandler.activeTaskIndex = -1;
+            taskHandler.texter.focus();
+        }
+        if (e.key === "Backspace"){
+            if (taskHandler.activeTaskIndex !=-1){
+                let event = new Event("click");
+                tasks[taskHandler.activeTaskIndex].taskDiv.lastChild.dispatchEvent(event);
+            }
+        }
         if(e.key === "ArrowDown" || e.key === "ArrowUp"){
             if (tasks.length !=0){
                 e.target.blur();
