@@ -30,7 +30,7 @@
                 text-align: center;
                 color:white;
             }
-            #addTask:hover{
+            #addTask:hover,  #addTask:focus{
                 background-color: rgb(192, 99, 130);
                 color:silver;
             }
@@ -44,7 +44,7 @@
                 align-content: center;
                 border-bottom: 1px solid slategrey;
             }
-            .active{
+            .task:focus{
                 border: 2px solid black;
             }
             .completed{
@@ -52,9 +52,13 @@
                 color: red;
             }
             .taskText{
-                width: 80%;
+                width: calc(90% - 4vw);
             }
             .trash{
+                width: 2vw;
+                height: 2vw;
+            }
+            .task .checkbox{
                 width: 2vw;
                 height: 2vw;
             }
@@ -63,7 +67,7 @@
     <body>
         <header>   
             <input id="newTask" type="text" placeholder="куплю-ка я мороженого...">
-            <input id="addTask" type="button" value="+" onclick="taskHandler.handelNewTask()">
+            <input id="addTask" type="button" value="+" onclick="taskHandler.handleNewTask()">
         </header>
     </body>
     <script src="logic.js">
